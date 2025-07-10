@@ -49,7 +49,7 @@ flask --app app:app run
 flask --app app:app run --debug
 ```
 
-2.1 Externally Visible Server
+3.1 Externally Visible Server
 
 ```ps
 flask run --host=0.0.0.0
