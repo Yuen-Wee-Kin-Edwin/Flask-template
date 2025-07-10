@@ -11,8 +11,10 @@ ENV PYTHONUNBUFFERED=1
 # Set working directory
 WORKDIR /app
 
-# Install zsh
-RUN apt-get update && apt-get install -y --no-install-recommends zsh \
+# Install zsh and curl
+RUN apt-get update && apt-get install -y --no-install-recommends  \
+    zsh  \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

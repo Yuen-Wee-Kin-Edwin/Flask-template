@@ -15,3 +15,7 @@ def index():
 @app.route("/about")
 def about():
     return "<p>About, World!!!!!</p>"
+
+@app.route("/health")
+def health():
+    return '', 200
