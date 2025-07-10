@@ -45,9 +45,9 @@ pip install -r requirements.txt
 Run the script to initialise `.env` files from the example files:
 
 ```bash
-zsh ./setup_env.sh     # if using Zsh
+zsh ./scripts/setup_env.sh     # if using Zsh
 # or
-bash ./setup_env.sh    # if using Bash
+bash ./scripts/setup_env.sh    # if using Bash
 ```
 
 4. Run Flask
