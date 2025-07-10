@@ -40,8 +40,17 @@ deactivate
 pip install -r requirements.txt
 ```
 
+3. Setup environment files
 
-3. Run Flask
+Run the script to initialise `.env` files from the example files:
+
+```bash
+zsh ./setup_env.sh     # if using Zsh
+# or
+bash ./setup_env.sh    # if using Bash
+```
+
+4. Run Flask
 
 ```ps
 flask --app app:app run
