@@ -7,3 +7,17 @@ services:
     volumes:
       - .:/app:cached
     working_dir: /app
+
+  db:
+    volumes:
+      - db-data-dev:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD_FILE: ""
+    secrets: []
+    ports:
+      - "5432:5432"
+
+volumes:
+  db-data-dev:
+    name: db-dev

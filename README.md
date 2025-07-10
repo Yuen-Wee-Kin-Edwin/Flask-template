@@ -69,13 +69,34 @@ flask --app app:app run --debug
 flask run --host=0.0.0.0
 ```
 
+## Database (PostgreSQL)
+Setup
+1. Create a password file:
+
+Windows
+```zsh
+New-Item -ItemType Directory -Force -Path .\db
+'your_secure_password' > .\db\password.txt
+
+```
+Linux
+```zsh
+mkdir -p db
+echo 'your_secure_password' > db/password.txt
+chmod 600 db/password.txt
+```
+
 ## Docker
 
 ```zsh
 // Production
-docker compose up --build -d
+docker compose -f compose.yaml up --build -d
 docker compose down
+docker volume rm db-prod
 
 // Development
 docker compose -f compose.yaml -f docker-compose.override.yaml up --build -d
+psql -h localhost -p 5432 -U postgres -d db
+docker volume rm db-dev
 ```
+
