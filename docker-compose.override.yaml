@@ -5,4 +5,5 @@ services:
       FLASK_APP: app.py
       FLASK_DEBUG: "1"
     volumes:
-      - .:/app
+      - .:/app:cached
+    working_dir: /app
