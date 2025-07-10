@@ -2,6 +2,7 @@
 
 1. Setup python virtual environment.
 
+**Windows**
 ```ps
 // Install virtualenv package
 pip install virtualenv
@@ -19,7 +20,28 @@ pip install -r requirements.txt
 deactivate
 ```
 
-2. Run Flask
+**Linux (Ubuntu)**
+```zsh
+sudo apt update
+sudo apt install python3 python3-venv
+
+// Create a virtual environment.
+python3 -m venv .venv
+
+// Activate the virtual environment.
+source .venv/bin/activate
+
+// Deactivate virtual environment
+deactivate
+```
+
+2. Install dependencies
+```zsh
+pip install -r requirements.txt
+```
+
+
+3. Run Flask
 
 ```ps
 flask --app app:app run
