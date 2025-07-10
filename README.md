@@ -3,6 +3,7 @@
 1. Setup python virtual environment.
 
 **Windows**
+
 ```ps
 // Install virtualenv package
 pip install virtualenv
@@ -21,6 +22,7 @@ deactivate
 ```
 
 **Linux (Ubuntu)**
+
 ```zsh
 sudo apt update
 sudo apt install python3 python3-venv
@@ -36,6 +38,7 @@ deactivate
 ```
 
 2. Install dependencies
+
 ```zsh
 pip install -r requirements.txt
 ```
@@ -45,9 +48,11 @@ pip install -r requirements.txt
 Run the script to initialise `.env` files from the example files:
 
 ```bash
-zsh ./scripts/setup_env.sh     # if using Zsh
+zsh ./scripts/setup_env.sh                                        # if using Zsh
 # or
-bash ./scripts/setup_env.sh    # if using Bash
+bash ./scripts/setup_env.sh                                       # if using Bash
+# or
+powershell -ExecutionPolicy Bypass -File .\scripts\setup_env.ps1  # if using PowerShell
 ```
 
 4. Run Flask
@@ -65,6 +70,7 @@ flask run --host=0.0.0.0
 ```
 
 ## Docker
+
 ```zsh
 // Production
 docker compose up --build -d
