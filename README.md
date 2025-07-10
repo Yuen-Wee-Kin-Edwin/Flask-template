@@ -54,3 +54,13 @@ flask --app app:app run --debug
 ```ps
 flask run --host=0.0.0.0
 ```
+
+## Docker
+```zsh
+// Production
+docker compose up --build -d
+docker compose down
+
+// Development
+docker compose -f compose.yaml -f docker-compose.override.yaml up --build -d
+```
