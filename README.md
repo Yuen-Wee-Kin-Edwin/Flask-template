@@ -104,6 +104,12 @@ docker compose -f compose.yaml up -d
 docker compose down
 docker volume rm db-prod
 ```
+
+### Docker Health Check
+```zsh
+curl -k -i https://localhost/health
+```
+
 ## SSL
 
 Linux (Created Self-Signed Cert)

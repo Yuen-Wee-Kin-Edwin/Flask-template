@@ -49,10 +49,10 @@ services:
     image: postgres
     container_name: db
     restart: always
-    secrets:
-      - db-password
     volumes:
       - db-data-prod:/var/lib/postgresql/data
+    secrets:
+      - db-password
     environment:
       POSTGRES_DB: db
       POSTGRES_USER: postgres

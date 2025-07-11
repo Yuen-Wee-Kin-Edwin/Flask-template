@@ -9,14 +9,17 @@ services:
     working_dir: /app
 
   db:
-    volumes:
-      - db-data-dev:/var/lib/postgresql/data
+    env_file:
+      - .env
+    # Disable secrets in dev.
+    secrets: []
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_PASSWORD_FILE: ""
-    secrets: []
     ports:
       - "5432:5432"
+    volumes:
+      - db-data-dev:/var/lib/postgresql/data
 
 volumes:
   db-data-dev:

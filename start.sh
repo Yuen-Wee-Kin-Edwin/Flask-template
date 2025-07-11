@@ -1,6 +1,10 @@
 #!/usr/bin/env zsh
 
 export FLASK_APP=src.app
+export PYTHONPATH=/app
+
+echo "Running DB setup..."
+python src/db_setup.py
 
 if [[ "$FLASK_ENV" == "development" ]]; then
   echo "Running in development mode with hot reload..."
