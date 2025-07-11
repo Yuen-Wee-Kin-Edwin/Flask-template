@@ -31,14 +31,14 @@ RUN adduser \
     appuser
 
 COPY requirements.txt requirements-prod.txt ./
-
 RUN python -m pip install --no-cache-dir -r requirements-prod.txt
+
+# Copy only necessary files.
+COPY src/ ./src/
+COPY start.sh .
 
 # Switch to the non-privileged user to run the application.
 USER appuser
-
-# Copy the source code into the container.
-COPY . .
 
 # Expose the port that the application listens on.
 EXPOSE 8000

@@ -89,14 +89,19 @@ chmod 600 db/password.txt
 ## Docker
 
 ```zsh
-// Production
-docker compose -f compose.yaml up --build -d
-docker compose down
-docker volume rm db-prod
-
 // Development
+docker compose -f compose.yaml -f docker-compose.override.yaml build --no-cache
+docker compose -f compose.yaml -f docker-compose.override.yaml up -d
 docker compose -f compose.yaml -f docker-compose.override.yaml up --build -d
+docker compose down
 psql -h localhost -p 5432 -U postgres -d db
 docker volume rm db-dev
+
+// Production
+docker compose -f compose.yaml up --build -d
+docker compose -f compose.yaml build --no-cache
+docker compose -f compose.yaml up -d
+docker compose down
+docker volume rm db-prod
 ```
 
