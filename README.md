@@ -104,4 +104,13 @@ docker compose -f compose.yaml up -d
 docker compose down
 docker volume rm db-prod
 ```
+## SSL
 
+Linux (Created Self-Signed Cert)
+```zsh
+mkdir -p certs
+openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
+  -keyout certs/selfsigned.key \
+  -out certs/selfsigned.crt \
+  -subj "/CN=localhost"
+```
