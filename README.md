@@ -98,8 +98,8 @@ docker volume rm db-dev
 
 // Production
 docker compose -f compose.yaml up --build -d
-docker compose -f compose.yaml build --no-cache
-docker compose -f compose.yaml up -d
+./scripts/prod_up.sh
+./scripts/prod_wipe.sh
 docker compose down
 docker volume rm db-prod
 ```

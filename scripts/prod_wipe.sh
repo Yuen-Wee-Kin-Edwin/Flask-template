@@ -2,8 +2,8 @@
 
 # Description:
 # This script forcefully stops and removes all Docker containers, volumes,
-# networks, and images defined in the development Compose files.
-# It gives a clean slate for rebuilding everything.
+# networks, and images defined in the production Compose file.
+# Provides a clean slate for production rebuild.
 
 set -e  # Exit on error
 
@@ -15,10 +15,10 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
 echo "🛑 Stopping and removing containers, networks, and volumes..."
-docker compose -f compose.yaml -f docker-compose.override.yaml down --volumes --remove-orphans
+docker compose -f compose.yaml down --volumes --remove-orphans
 
 echo "🧹 Pruning dangling images and unused volumes..."
 docker image prune -f
 docker volume prune -f
 
-echo "✅ Development Docker environment fully reset."
+echo "✅ Production Docker environment fully reset."

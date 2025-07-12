@@ -2,11 +2,11 @@ import logging
 import os.path
 
 from dotenv import load_dotenv
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from redis import Redis
 from redis.exceptions import ConnectionError
 from sqlalchemy import text, inspect
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from urllib.parse import quote_plus
 
 from src.extensions import db
@@ -92,12 +92,24 @@ def health():
                 logging.error(f"PostgreSQL table '{table_name}' missing")
                 return f"PostgreSQL table '{table_name}' missing", 500
 
-        # If all tables are present
-        return f"All expected tables present: {existing_tables}", 200
+        # Fetch sample data from user table.
+        rows = [dict(row) for row in db.session.execute(text('SELECT * FROM "user" LIMIT 5')).mappings().all()]
+
+        logging.info(f"Sample data from 'user': {rows}")
+
+        return jsonify({
+            "status": "OK",
+            "tables": expected_tables,
+            "sample_data_user": rows
+        }), 200
 
     except OperationalError:
         logging.error("PostgreSQL not available")
-        return "PostgreSQL not available", 500
+        return jsonify({"error": "PostgreSQL not available"}), 500
+
+    except SQLAlchemyError as e:
+        logging.error(f"Error querying database: {e}")
+        return jsonify({"error": "Database query error"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
