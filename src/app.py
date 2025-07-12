@@ -19,6 +19,8 @@ app = Flask(__name__)
 redis_client = Redis(host='redis', port=6379, decode_responses=True)
 redis_service = RedisRepository(redis_client)
 
+env = os.getenv("FLASK_ENV", "development")
+
 def get_db_password():
     secret_path = "/db/password.txt"
     if os.path.exists(secret_path):
@@ -26,9 +28,14 @@ def get_db_password():
             return f.read().strip()
     return os.getenv("POSTGRES_PASSWORD")
 
+if env == "production":
+    raw_password = get_db_password()
+else:
+    raw_password = "password"
+
 # Build DB URI from components
 db_user = os.getenv("POSTGRES_USER")
-db_password = quote_plus(get_db_password())
+db_password = quote_plus(raw_password)
 db_host = os.getenv("POSTGRES_HOST", "localhost")
 db_port = os.getenv("POSTGRES_PORT", "5432")
 db_name = os.getenv("POSTGRES_DB")
