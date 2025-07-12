@@ -7,6 +7,7 @@ from redis import Redis
 from redis.exceptions import ConnectionError
 from sqlalchemy import text, inspect
 from sqlalchemy.exc import OperationalError
+from urllib.parse import quote_plus
 
 from src.extensions import db
 from src.repositories.redis_repository import RedisRepository
@@ -27,7 +28,7 @@ def get_db_password():
 
 # Build DB URI from components
 db_user = os.getenv("POSTGRES_USER")
-db_password = get_db_password()
+db_password = quote_plus(get_db_password())
 db_host = os.getenv("POSTGRES_HOST", "localhost")
 db_port = os.getenv("POSTGRES_PORT", "5432")
 db_name = os.getenv("POSTGRES_DB")
