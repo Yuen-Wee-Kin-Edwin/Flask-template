@@ -13,6 +13,8 @@ services:
       - .env
     # Disable secrets in dev.
     secrets: []
+    environment:
+      POSTGRES_PASSWORD_FILE: ""
     ports:
       - "5432:5432"
     volumes:
