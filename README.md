@@ -90,9 +90,8 @@ chmod 600 db/password.txt
 
 ```zsh
 // Development
-docker compose -f compose.yaml -f docker-compose.override.yaml build --no-cache
-docker compose -f compose.yaml -f docker-compose.override.yaml up -d
-docker compose -f compose.yaml -f docker-compose.override.yaml up --build -d
+./scripts/dev_up.sh
+./scripts/dev_wipe.sh
 docker compose down
 psql -h localhost -p 5432 -U postgres -d db
 docker volume rm db-dev
