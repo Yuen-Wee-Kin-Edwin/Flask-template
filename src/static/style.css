@@ -5,11 +5,14 @@ html, body {
 }
 
 body {
+    /* Make flex container flexible */
     display: flex;
+    /* Display flex items vertically */
     flex-direction: column;
     min-height: 100vh;
 }
 
 main.container {
+    /* Grow to take up any available space within its flex container */
     flex-grow: 1;
 }
