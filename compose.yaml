@@ -15,10 +15,13 @@ services:
     working_dir: /app
     build:
       context: .
+    devices:
+      - "/dev/video0:/dev/video0"
+    privileged: true
     env_file:
       - .env.production
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -72,7 +75,7 @@ services:
     expose:
       - 6379
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5

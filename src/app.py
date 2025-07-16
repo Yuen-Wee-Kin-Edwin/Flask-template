@@ -1,8 +1,10 @@
+# File: app.py
 import logging
 import os.path
+import cv2
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, Response
 from redis import Redis
 from redis.exceptions import ConnectionError
 from sqlalchemy import text, inspect
@@ -21,12 +23,34 @@ redis_service = RedisRepository(redis_client)
 
 env = os.getenv("FLASK_ENV", "development")
 
+# OpenCV VideoCapture - /dev/video0 is default linux webcam.
+camera = cv2.VideoCapture(0)
+
+
+def generate_frames():
+    while True:
+        # Read frame from camera
+        success, frame = camera.read()
+
+        if not success:
+            break
+        else:
+            # Encode frame to JPEG
+            ret, buffer = cv2.imencode(".jpg", frame)
+            frame_bytes = buffer.tobytes()
+
+            # Yield multipart HTTP response
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+
 def get_db_password():
     secret_path = "/db/password.txt"
     if os.path.exists(secret_path):
         with open(secret_path) as f:
             return f.read().strip()
     return os.getenv("POSTGRES_PASSWORD")
+
 
 if env == "production":
     raw_password = get_db_password()
@@ -55,6 +79,7 @@ with app.app_context():
     except Exception as e:
         logging.error(f"Error creating tables: {e}")
 
+
 @app.route("/")
 def index():
     name = "Edwin"
@@ -62,9 +87,11 @@ def index():
     person = redis_service.get_value("user")
     return render_template("index.html", person=person)
 
+
 @app.route("/about")
 def about():
     return "<p>About, World!</p>"
+
 
 @app.route("/health")
 def health():
@@ -80,12 +107,12 @@ def health():
 
         # Inspect to verify if a specific table exists, e.g. 'user'
         inspector = inspect(db.engine)
-        existing_tables  = inspector.get_table_names()
+        existing_tables = inspector.get_table_names()
 
         expected_tables = ["user"]
 
-        logging.info(f"Tables in database: {existing_tables }")
-        print(f"Tables in database: {existing_tables }")
+        logging.info(f"Tables in database: {existing_tables}")
+        print(f"Tables in database: {existing_tables}")
 
         for table_name in expected_tables:
             if table_name not in existing_tables:
@@ -110,6 +137,14 @@ def health():
     except SQLAlchemyError as e:
         logging.error(f"Error querying database: {e}")
         return jsonify({"error": "Database query error"}), 500
+
+
+@app.route("/video_feed")
+def video_feed():
+    """Video streaming route. Use this in an <img> tag."""
+    return Response(generate_frames(),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
