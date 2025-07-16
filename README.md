@@ -61,11 +61,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\setup_env.ps1  # if using Pow
 flask --app app:app run
 // Hot-reload.
 flask --app app:app run --debug
-```
-
-3.1 Externally Visible Server
-
-```ps
+// Externally Visible Server
 flask run --host=0.0.0.0
 ```
 
