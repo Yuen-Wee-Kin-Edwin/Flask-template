@@ -1,7 +1,6 @@
 # File: app.py
 import logging
 import os.path
-import cv2
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, Response
@@ -11,6 +10,7 @@ from sqlalchemy import text, inspect
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from urllib.parse import quote_plus
 
+from src.entities.webcam_stream import WebcamStream
 from src.extensions import db
 from src.repositories.redis_repository import RedisRepository
 
@@ -23,25 +23,10 @@ redis_service = RedisRepository(redis_client)
 
 env = os.getenv("FLASK_ENV", "development")
 
-# OpenCV VideoCapture - /dev/video0 is default linux webcam.
-camera = cv2.VideoCapture(0)
-
-
-def generate_frames():
-    while True:
-        # Read frame from camera
-        success, frame = camera.read()
-
-        if not success:
-            break
-        else:
-            # Encode frame to JPEG
-            ret, buffer = cv2.imencode(".jpg", frame)
-            frame_bytes = buffer.tobytes()
-
-            # Yield multipart HTTP response
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+# Point to a webcam streamer running on Windows host.
+HOST_IP_ADDRESS = "http://host.docker.internal:8080/"
+STREAM_URL = f"{HOST_IP_ADDRESS}stream"
+camera = WebcamStream(stream_url=STREAM_URL)
 
 
 def get_db_password():
@@ -141,9 +126,11 @@ def health():
 
 @app.route("/video_feed")
 def video_feed():
-    """Video streaming route. Use this in an <img> tag."""
-    return Response(generate_frames(),
-                    mimetype="multipart/x-mixed-replace; boundary=frame")
+    if True:
+        return "Webcam stream is currently disabled.", 403
+    return None
+    #     """Video streaming route. Use this in an <img> tag."""
+    #     return Response(camera.generate_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
 if __name__ == "__main__":
