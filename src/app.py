@@ -1,6 +1,7 @@
 # File: app.py
 import logging
 import os.path
+from urllib.parse import quote_plus
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, Response
@@ -8,25 +9,10 @@ from redis import Redis
 from redis.exceptions import ConnectionError
 from sqlalchemy import text, inspect
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
-from urllib.parse import quote_plus
 
 from src.entities.webcam_stream import WebcamStream
 from src.extensions import db
 from src.repositories.redis_repository import RedisRepository
-
-# Load .env (only in dev)
-load_dotenv()
-app = Flask(__name__)
-# Connect to Redis server by service name 'redis'
-redis_client = Redis(host='redis', port=6379, decode_responses=True)
-redis_service = RedisRepository(redis_client)
-
-env = os.getenv("FLASK_ENV", "development")
-
-# Point to a webcam streamer running on Windows host.
-HOST_IP_ADDRESS = "http://host.docker.internal:8080/"
-STREAM_URL = f"{HOST_IP_ADDRESS}stream"
-camera = WebcamStream(stream_url=STREAM_URL)
 
 
 def get_db_password():
@@ -37,21 +23,35 @@ def get_db_password():
     return os.getenv("POSTGRES_PASSWORD")
 
 
-if env == "production":
-    raw_password = get_db_password()
-else:
-    raw_password = "password"
+def load_config():
+    env = os.getenv("FLASK_ENV", "development")
+    raw_password = get_db_password() if env == "production" else "password"
+    # Build DB URI from components
+    db_user = os.getenv("POSTGRES_USER")
+    db_password = quote_plus(raw_password)
+    db_host = os.getenv("POSTGRES_HOST", "localhost")
+    db_port = os.getenv("POSTGRES_PORT", "5432")
+    db_name = os.getenv("POSTGRES_DB")
 
-# Build DB URI from components
-db_user = os.getenv("POSTGRES_USER")
-db_password = quote_plus(raw_password)
-db_host = os.getenv("POSTGRES_HOST", "localhost")
-db_port = os.getenv("POSTGRES_PORT", "5432")
-db_name = os.getenv("POSTGRES_DB")
+    # Configure the PostgreSQL database URI
+    return {
+        "SQLALCHEMY_DATABASE_URI": f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}",
+        "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+    }
 
-# Configure the PostgreSQL database URI
-app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Load .env (only in dev)
+load_dotenv()
+app = Flask(__name__)
+app.config.update(load_config())
+# Connect to Redis server by service name 'redis'
+redis_client = Redis(host='redis', port=6379, decode_responses=True)
+redis_service = RedisRepository(redis_client)
+
+# Point to a webcam streamer running on Windows host.
+HOST_IP_ADDRESS = "http://host.docker.internal:8080/"
+STREAM_URL = f"{HOST_IP_ADDRESS}stream"
+camera = WebcamStream(stream_url=STREAM_URL)
 
 db.init_app(app)
 
