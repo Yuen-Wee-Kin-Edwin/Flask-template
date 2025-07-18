@@ -4,11 +4,8 @@ import os.path
 from urllib.parse import quote_plus
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify, Response
+from flask import Flask
 from redis import Redis
-from redis.exceptions import ConnectionError
-from sqlalchemy import text, inspect
-from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from src.entities.webcam_stream import WebcamStream
 from src.extensions import db
@@ -40,98 +37,49 @@ def load_config():
     }
 
 
-# Load .env (only in dev)
-load_dotenv()
-app = Flask(__name__)
-app.config.update(load_config())
-# Connect to Redis server by service name 'redis'
-redis_client = Redis(host='redis', port=6379, decode_responses=True)
-redis_service = RedisRepository(redis_client)
+def create_app():
+    # Load .env (only in dev)
+    load_dotenv()
+    app = Flask(__name__)
+    app.config.update(load_config())
 
-# Point to a webcam streamer running on Windows host.
-HOST_IP_ADDRESS = "http://host.docker.internal:8080/"
-STREAM_URL = f"{HOST_IP_ADDRESS}stream"
-camera = WebcamStream(stream_url=STREAM_URL)
+    db.init_app(app)
 
-db.init_app(app)
+    # Connect to Redis server by service name 'redis'
+    redis_client = Redis(host='redis', port=6379, decode_responses=True)
+    redis_service = RedisRepository(redis_client)
 
-# Create tables if they do not exist
-with app.app_context():
-    try:
-        db.create_all()
-        app.logger.info("Database tables created or already exist")
-        print("Tables created successfully")
-    except Exception as e:
-        logging.error(f"Error creating tables: {e}")
+    # Point to a webcam streamer running on Windows host.
+    HOST_IP_ADDRESS = "http://host.docker.internal:8080/"
+    STREAM_URL = f"{HOST_IP_ADDRESS}stream"
+    camera = WebcamStream(stream_url=STREAM_URL)
 
+    # Store these objects in app.extensions for access inside blueprints
+    app.extensions["redis_client"] = redis_client
+    app.extensions["redis_service"] = redis_service
+    app.extensions["redis_service"] = redis_service
+    app.extensions["camera"] = camera
+    app.extensions["db"] = db
 
-@app.route("/")
-def index():
-    name = "Edwin"
-    redis_service.set_value("user", name)
-    person = redis_service.get_value("user")
-    return render_template("index.html", person=person)
+    # Create tables if they do not exist
+    with app.app_context():
+        try:
+            db.create_all()
+            app.logger.info("Database tables created or already exist")
+            print("Tables created successfully")
+        except Exception as e:
+            logging.error(f"Error creating tables: {e}")
 
+    # Import blueprints here to avoid circular imports
+    from src.blueprints.main import main_bp
+    from src.blueprints.video import video_bp
 
-@app.route("/about")
-def about():
-    return "<p>About, World!</p>"
+    app.register_blueprint(main_bp)
+    app.register_blueprint(video_bp)
 
-
-@app.route("/health")
-def health():
-    try:
-        redis_client.ping()
-    except ConnectionError:
-        logging.error("Redis not available")
-        return 'Redis not available', 500
-
-    try:
-        # Check PostgreSQL connection with a lightweight query.
-        db.session.execute(text("SELECT 1"))
-
-        # Inspect to verify if a specific table exists, e.g. 'user'
-        inspector = inspect(db.engine)
-        existing_tables = inspector.get_table_names()
-
-        expected_tables = ["user"]
-
-        logging.info(f"Tables in database: {existing_tables}")
-        print(f"Tables in database: {existing_tables}")
-
-        for table_name in expected_tables:
-            if table_name not in existing_tables:
-                logging.error(f"PostgreSQL table '{table_name}' missing")
-                return f"PostgreSQL table '{table_name}' missing", 500
-
-        # Fetch sample data from user table.
-        rows = [dict(row) for row in db.session.execute(text('SELECT * FROM "user" LIMIT 5')).mappings().all()]
-
-        logging.info(f"Sample data from 'user': {rows}")
-
-        return jsonify({
-            "status": "OK",
-            "tables": expected_tables,
-            "sample_data_user": rows
-        }), 200
-
-    except OperationalError:
-        logging.error("PostgreSQL not available")
-        return jsonify({"error": "PostgreSQL not available"}), 500
-
-    except SQLAlchemyError as e:
-        logging.error(f"Error querying database: {e}")
-        return jsonify({"error": "Database query error"}), 500
-
-
-@app.route("/video_feed")
-def video_feed():
-    if True:
-        return "Webcam stream is currently disabled.", 403
-    return None
-    #     """Video streaming route. Use this in an <img> tag."""
-    #     return Response(camera.generate_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
+    return app
 
 
 if __name__ == "__main__":
+    app = create_app()
     app.run(debug=True, host="0.0.0.0")
