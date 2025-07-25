@@ -55,27 +55,32 @@ bash ./scripts/setup_env.sh                                       # if using Bas
 powershell -ExecutionPolicy Bypass -File .\scripts\setup_env.ps1  # if using PowerShell
 ```
 
-4. Run Flask
+4. Run Flask app only
 
 ```ps
-flask --app app:app run
+$env:USE_DATABASE="false"; $env:USE_REDIS="false"; flask --app src.app:app run
 // Hot-reload.
-flask --app app:app run --debug
+$env:USE_DATABASE="false"; $env:USE_REDIS="false"; flask --app src.app:app run --reload
 // Externally Visible Server
-flask run --host=0.0.0.0
+$env:FLASK_DEBUG="1"; $env:USE_DATABASE="false"; $env:USE_REDIS="false"; flask --app src.app:app run --host=0.0.0.0 --reload
 ```
 
 ## Database (PostgreSQL)
+
 Setup
+
 1. Create a password file:
 
 Windows
+
 ```zsh
 New-Item -ItemType Directory -Force -Path .\db
 'your_secure_password' > .\db\password.txt
 
 ```
+
 Linux
+
 ```zsh
 mkdir -p db
 echo 'your_secure_password' > db/password.txt
@@ -101,6 +106,7 @@ docker volume rm db-prod
 ```
 
 ### Docker Health Check
+
 ```zsh
 curl -k -i https://localhost/health
 ```
@@ -108,6 +114,7 @@ curl -k -i https://localhost/health
 ## SSL
 
 Linux (Created Self-Signed Cert)
+
 ```zsh
 mkdir -p certs
 openssl req -x509 -nodes -days 365 -newkey rsa:4096 \

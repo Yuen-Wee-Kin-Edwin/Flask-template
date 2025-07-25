@@ -1,5 +1,5 @@
 # src/blueprints/main.py
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, jsonify
 from redis.exceptions import ConnectionError
 from sqlalchemy import text, inspect
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
@@ -11,11 +11,21 @@ main_bp = Blueprint("main", __name__)
 
 @main_bp.route("/")
 def index():
-    from flask import current_app
-    redis_service: RedisRepository = current_app.extensions.get("redis_service")
+    from flask import current_app, render_template
+
     name = "Edwin"
-    redis_service.set_value("user", name)
-    person = redis_service.get_value("user")
+    person = name  # Default fallback if Redis fails
+
+    try:
+        redis_service: RedisRepository = current_app.extensions.get("redis_service")
+        if redis_service:
+            redis_service.set_value("user", name)
+            person = redis_service.get_value("user")
+        else:
+            current_app.logger.warning("Redis service is not available")
+    except Exception as e:
+        current_app.logger.error(f"Redis operation failed: {e}")
+
     return render_template("index.html", person=person)
 
 
@@ -27,6 +37,7 @@ def about():
 @main_bp.route("/health")
 def health():
     from flask import current_app
+
     redis_client = current_app.extensions.get("redis_client")
     db = current_app.extensions.get("db")
 
@@ -34,7 +45,7 @@ def health():
         redis_client.ping()
     except ConnectionError:
         current_app.logger.error("Redis not available")
-        return 'Redis not available', 500
+        return "Redis not available", 500
 
     try:
         # Check PostgreSQL connection with a lightweight query.
@@ -54,15 +65,21 @@ def health():
                 return f"PostgreSQL table '{table_name}' missing", 500
 
         # Fetch sample data from user table.
-        rows = [dict(row) for row in db.session.execute(text('SELECT * FROM "user" LIMIT 5')).mappings().all()]
+        rows = [
+            dict(row)
+            for row in db.session.execute(text('SELECT * FROM "user" LIMIT 5'))
+            .mappings()
+            .all()
+        ]
 
         current_app.logger.info(f"Sample data from 'user': {rows}")
 
-        return jsonify({
-            "status": "OK",
-            "tables": expected_tables,
-            "sample_data_user": rows
-        }), 200
+        return (
+            jsonify(
+                {"status": "OK", "tables": expected_tables, "sample_data_user": rows}
+            ),
+            200,
+        )
 
     except OperationalError:
         current_app.logger.error("PostgreSQL not available")

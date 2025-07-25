@@ -43,11 +43,41 @@ def create_app():
     app = Flask(__name__)
     app.config.update(load_config())
 
-    db.init_app(app)
+    # Default to true
+    use_db = os.getenv("USE_DATABASE", "true").lower() == "true"
 
-    # Connect to Redis server by service name 'redis'
-    redis_client = Redis(host='redis', port=6379, decode_responses=True)
-    redis_service = RedisRepository(redis_client)
+    if use_db:
+        db.init_app(app)
+
+        # Create tables if they do not exist
+        with app.app_context():
+            try:
+                db.create_all()
+                app.logger.info("Database tables created or already exist")
+                print("Tables created successfully")
+            except Exception as e:
+                logging.error(f"Error creating tables: {e}")
+
+    else:
+        app.logger.info("Skipping database initialisation (USE_DATABASE=false)")
+
+    # Handle optional Redis
+    use_redis = os.getenv("USE_REDIS", "true").lower() == "true"
+    if use_redis:
+        try:
+            # Connect to Redis server by service name 'redis'
+            redis_host = os.getenv("REDIS_HOST")
+            redis_client = Redis(host=redis_host, port=6379, decode_responses=True)
+            # Throws if not reachable
+            redis_client.ping()
+            redis_service = RedisRepository(redis_client)
+            # Store these objects in app.extensions for access inside blueprints
+            app.extensions["redis_client"] = redis_client
+            app.extensions["redis_service"] = redis_service
+        except Exception as e:
+            app.logger.warning(f"Redis connection failed: {e}")
+    else:
+        app.logger.info("Skipping Redis initialisation (USE_REDIS=false)")
 
     # Point to a webcam streamer running on Windows host.
     HOST_IP_ADDRESS = "http://host.docker.internal:8080/"
@@ -55,20 +85,8 @@ def create_app():
     camera = WebcamStream(stream_url=STREAM_URL)
 
     # Store these objects in app.extensions for access inside blueprints
-    app.extensions["redis_client"] = redis_client
-    app.extensions["redis_service"] = redis_service
-    app.extensions["redis_service"] = redis_service
     app.extensions["camera"] = camera
-    app.extensions["db"] = db
-
-    # Create tables if they do not exist
-    with app.app_context():
-        try:
-            db.create_all()
-            app.logger.info("Database tables created or already exist")
-            print("Tables created successfully")
-        except Exception as e:
-            logging.error(f"Error creating tables: {e}")
+    app.extensions["db"] = db if use_db else None
 
     # Import blueprints here to avoid circular imports
     from src.blueprints.main import main_bp
@@ -79,6 +97,8 @@ def create_app():
 
     return app
 
+
+app = create_app()
 
 if __name__ == "__main__":
     app = create_app()

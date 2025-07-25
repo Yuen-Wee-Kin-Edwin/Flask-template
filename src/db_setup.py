@@ -1,3 +1,4 @@
+# File: src/db_setup.py
 from src.app import app
 from src.extensions import db
 from src.entities.user import User

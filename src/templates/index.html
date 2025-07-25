@@ -2,17 +2,17 @@
 {% extends 'base.html' %}
 
 {% block header %}
-    <h2>Welcome to My Site</h2>
+<h2>Welcome to My Site</h2>
 {% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-md">
-            {% if person %}
-                <h1>Hello {{ person }} !</h1>
-            {% else %}
-                <h1>Hello, World!</h1>
-            {% endif %}
-        </div>
+<div class="row">
+    <div class="col-md">
+        {% if person %}
+        <h1>Hello {{ person }} !!</h1>
+        {% else %}
+        <h1>Hello, World!</h1>
+        {% endif %}
     </div>
+</div>
 {% endblock %}

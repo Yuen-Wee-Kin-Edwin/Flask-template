@@ -8,10 +8,18 @@ class WebcamStream:
        If stream_url is None, use default local camera (index 0).
        Otherwise, use the provided URL to open an MJPEG stream.
        """
+        self.camera = None
         if stream_url:
             self.camera = cv2.VideoCapture(stream_url)
-        else:
+            if not self.camera.isOpened():
+                print(f"Warning: Unable to open stream at {stream_url}. Falling back to local camera.")
+                self.camera.release()
+                self.camera = None
+
+        if self.camera is None:
             self.camera = cv2.VideoCapture(0)
+            if not self.camera.isOpened():
+                raise RuntimeError("Error: Unable to open local camera.")
 
     def generate_frames(self):
         """
