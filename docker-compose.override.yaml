@@ -12,7 +12,7 @@ services:
     env_file:
       - .env
     # Disable secrets in dev.
-    secrets: []
+    secrets: [ ]
     environment:
       POSTGRES_PASSWORD_FILE: ""
     ports:
@@ -20,6 +20,22 @@ services:
     volumes:
       - db-data-dev:/var/lib/postgresql/data
 
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    ports:
+      - "9000:9000"   # Web UI
+      - "9092:9092"   # Internal communication
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
 volumes:
   db-data-dev:
     name: db-dev
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

@@ -122,3 +122,17 @@ openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
   -out certs/selfsigned.crt \
   -subj "/CN=localhost"
 ```
+
+## SonarQube
+
+### Access
+
+- SonarQube is accessible by default at: [http://localhost:9000](http://localhost:9000)
+
+### Default Credentials
+
+| Username | Password |
+|----------|----------|
+| `admin`  | `admin`  |
+
+> **Note:** Change the default password immediately after the first login to secure your instance.
