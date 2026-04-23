@@ -8,6 +8,11 @@ pip install -r requirements.txt
 ```
 
 ```zsh
-# Run the app
-docker compose up --build -d
+# Run/Stop the app
+docker compose --profile dev up --build -d
+docker compose --profile dev down
+
+# Production
+docker compose --profile prod up --build -d
+docker compose --profile prod down
 ```

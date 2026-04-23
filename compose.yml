@@ -1,12 +1,27 @@
 services:
-  web:
-    build: .
+  # Development Environment Service
+  web-dev:
+    build:
+      context: .
+      target: development
+    profiles: ["dev"]
     ports:
       - "5000:5000"
     volumes:
       # Mount the local src directory to enable live reloading
       - ./src:/app/src
     environment:
-      # Configure Flask variables for the development environment
       - FLASK_APP=src.app
-      - FLASK_DEBUG=1
+      - FLASK_ENV=development
+
+  web-prod:
+    build:
+      context: .
+      target: production
+    profiles: ["prod"]
+    ports:
+      - "80:8000"
+    restart: always
+    environment:
+      - FLASK_APP=src.app
+      - FLASK_ENV=production
