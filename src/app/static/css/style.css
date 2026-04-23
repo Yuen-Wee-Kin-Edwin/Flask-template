@@ -1,0 +1,10 @@
+/* Custom navbar background colour */
+.navbar-custom {
+  background-color: #0f4c81 !important;
+}
+
+/* Ensure the navbar brand and links remain legible */
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+  color: #ffffff;
+}

@@ -10,4 +10,19 @@ def create_app():
     def index():
         return render_template("index.html")
 
+    # Define the about route
+    @app.route("/about")
+    def about():
+        return render_template("about.html")
+
+    # Define the login route
+    @app.route("/login")
+    def login():
+        return render_template("login.html")
+
+    # Define the signup route
+    @app.route("/signup")
+    def signup():
+        return render_template("signup.html")
+
     return app
