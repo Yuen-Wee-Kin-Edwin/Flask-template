@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount the local src directory to enable live reloading
+      - ./src:/app/src
+    environment:
+      # Configure Flask variables for the development environment
+      - FLASK_APP=src.app
+      - FLASK_DEBUG=1
