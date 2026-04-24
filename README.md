@@ -12,6 +12,8 @@ pip install -r requirements.txt
 
 ```zsh
 # Run/Stop the app
+docker compose --profile dev build --no-cache
+
 docker compose --profile dev up --build -d
 docker compose --profile dev down
 docker compose --profile dev down -v
