@@ -13,6 +13,9 @@ services:
     environment:
       - FLASK_APP=src.app
       - FLASK_ENV=development
+      - DATABASE_URL=postgresql://edwin:password@db:5432/db
+    depends_on:
+      - db
 
   web-prod:
     build:
@@ -25,3 +28,24 @@ services:
     environment:
       - FLASK_APP=src.app
       - FLASK_ENV=production
+      - DATABASE_URL=postgresql://edwin:password@db:5432/db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14.22
+    container_name: db
+    profiles: ["dev", "prod"]
+    restart: always
+    environment:
+      - POSTGRES_USER=edwin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:
