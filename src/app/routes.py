@@ -1,10 +1,11 @@
 # File: src/app/routes.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from werkzeug.security import generate_password_hash
 from sqlalchemy.exc import IntegrityError
+from argon2 import PasswordHasher
 from .models import db, User
 
 main_bp = Blueprint("main", __name__)
+ph = PasswordHasher()
 
 
 @main_bp.route("/")
@@ -37,15 +38,15 @@ def signup():
 
         # Server-Side Validation.
         if not email or not password or not confirm_password:
-            flash("All fields are mandatory.")
+            flash("All fields are mandatory.", "danger")
             return redirect(url_for("auth.signup"))
 
         if password != confirm_password:
-            flash("Passwords do not match. Please try again.")
+            flash("Passwords do not match. Please try again.", "warning")
             return redirect(url_for("auth.signup"))
 
-        # Security Configuration.
-        hashed_password = generate_password_hash(password)
+        # Secure the password using Argon2id.
+        hashed_password = ph.hash(password)
 
         # ORM Database execution.
         new_user = User(email=email, password=hashed_password)
@@ -54,13 +55,16 @@ def signup():
         try:
             # Commit the transaction explicitly to save the object.
             db.session.commit()
-            flash("Account successfully created. Please log in.")
+            flash("Account successfully created. Please log in.", "success")
             return redirect(url_for("auth.login"))
 
         except IntegrityError:
             # Roll back the transaction if the unique constraint on the email column is violated.
             db.session.rollback()
-            flash("Registration failed. The email address might already be in use.")
+            flash(
+                "Registration failed. The email address might already be in use.",
+                "danger",
+            )
             return redirect(url_for("auth.signup"))
 
     return render_template("signup.html")
