@@ -13,7 +13,7 @@ services:
     environment:
       - FLASK_APP=src.app
       - FLASK_ENV=development
-      - DATABASE_URL=postgresql://edwin:password@db:5432/db
+      - DATABASE_URL=postgresql+psycopg://edwin:password@db:5432/db
     depends_on:
       - db
 
@@ -28,7 +28,7 @@ services:
     environment:
       - FLASK_APP=src.app
       - FLASK_ENV=production
-      - DATABASE_URL=postgresql://edwin:password@db:5432/db
+      - DATABASE_URL=postgresql+psycopg://edwin:password@db:5432/db
     depends_on:
       - db
 

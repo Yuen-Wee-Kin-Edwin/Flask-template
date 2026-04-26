@@ -5,10 +5,16 @@ block content %}
     <div class="card shadow-sm">
       <div class="card-body p-4">
         <h3 class="card-title text-center mb-4">Register Account</h3>
-        <form action="#" method="POST">
+        <form action="{{ url_for('auth.signup')}}" method="POST">
           <div class="mb-3">
             <label for="email" class="form-label">Email address</label>
-            <input type="email" class="form-control" id="email" required />
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="email"
+              required
+            />
           </div>
 
           <div class="mb-3">
@@ -17,6 +23,7 @@ block content %}
               type="password"
               class="form-control"
               id="password"
+              name="password"
               required
             />
           </div>
@@ -29,6 +36,7 @@ block content %}
               type="password"
               class="form-control"
               id="confirm_password"
+              name="confirm_password"
               required
             />
           </div>
