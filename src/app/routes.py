@@ -1,5 +1,6 @@
 # File: src/app/routes.py
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from argon2.exceptions import VerifyMismatchError
 from sqlalchemy.exc import IntegrityError
 from argon2 import PasswordHasher
 from .models import db, User
@@ -22,9 +23,39 @@ def about():
 auth_bp = Blueprint("auth", __name__)
 
 
-@auth_bp.route("/login")
+@auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    """Render the login page."""
+    """Process user authentication and initialise sessions."""
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        if not email or not password:
+            flash("Please provide both email and password.", "warning")
+            return redirect(url_for("auth.login"))
+
+        user = db.session.execute(
+            db.select(User).filter_by(email=email)
+        ).scalar_one_or_none()
+
+        if user:
+            try:
+                ph.verify(user.password, password)
+
+                if ph.check_needs_rehash(user.password):
+                    user.password = ph.hash(password)
+                    db.session.commit()
+
+                session["user_id"] = user.id
+                flash("Login successful.", "success")
+                return redirect(url_for("main.index"))
+
+            except VerifyMismatchError:
+                pass
+
+        flash("Invalid email or password.", "danger")
+        return redirect(url_for("auth.login"))
+
     return render_template("login.html")
 
 
