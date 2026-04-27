@@ -14,8 +14,11 @@ services:
       - FLASK_APP=src.app
       - FLASK_ENV=development
       - DATABASE_URL=postgresql+psycopg://edwin:password@db:5432/db
+      - DEFAULT_ADMIN_EMAIL=edwin.edwin313@gmail.com
+      - DEFAULT_ADMIN_PASSWORD=Sup3rS3cr3tP@ssw0rd
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   web-prod:
     build:
@@ -29,8 +32,11 @@ services:
       - FLASK_APP=src.app
       - FLASK_ENV=production
       - DATABASE_URL=postgresql+psycopg://edwin:password@db:5432/db
+      - DEFAULT_ADMIN_EMAIL=edwin.edwin313@gmail.com
+      - DEFAULT_ADMIN_PASSWORD=Sup3rS3cr3tP@ssw0rd
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:14.22
@@ -46,6 +52,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U your_postgres_user -d your_postgres_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
